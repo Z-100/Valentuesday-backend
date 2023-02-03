@@ -1,0 +1,125 @@
+package com.z100.valentuesday.server.util;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.z100.valentuesday.api.entity.Account;
+import com.z100.valentuesday.api.exception.ApiException;
+import com.z100.valentuesday.server.Constants;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+/**
+ * Util to handle JWT tokens
+ *
+ * @author z-100
+ */
+@Component
+public class JwtUtil {
+
+	private Constants constants;
+
+	public Function<String, DecodedJWT> extractBearer = authHeaderIn -> {
+		String token = authHeaderIn.substring(constants.getTokenPrefix().length());
+		JWTVerifier verifier = JWT.require(algorithm()).build();
+
+		return verifier.verify(token);
+	};
+
+	public JwtUtil(Constants constants) {
+		this.constants = constants;
+	}
+
+	public Map<String, String> generateNewTokenMap(String subject, String issuer, List<?> roles) {
+
+		Map<String, String> tokens = new HashMap<>();
+		tokens.put("access_token", generateNewAccessToken(subject, issuer, roles));
+		tokens.put("refresh_token", generateNewRefreshToken(subject, issuer));
+
+		return tokens;
+	}
+
+	public String generateNewAccessToken(String subject, String issuer, List<?> roles) {
+		return JWT.create()
+				.withSubject(subject)
+				.withExpiresAt(new Date(System.currentTimeMillis() + constants.getExpiration().get("access_token")))
+				.withIssuer(issuer)
+				.withClaim("rls", roles)
+				.sign(algorithm());
+	}
+
+	public String generateNewRefreshToken(String subject, String issuer) {
+		return JWT.create()
+				.withSubject(subject)
+				.withExpiresAt(new Date(System.currentTimeMillis() + constants.getExpiration().get("refresh_token")))
+				.withIssuer(issuer)
+				.sign(algorithm());
+	}
+
+	public String generateNewAccessToken(Account account) {
+
+		String subject = account.getUsername();
+		String issuer = "Refresh token";
+		List<String> rolesClaim = account.getRoles().stream().toList();
+
+		return generateNewAccessToken(subject, issuer, rolesClaim);
+	}
+
+	public String getUsernameFromToken(DecodedJWT token) {
+
+		return token.getSubject();
+	}
+
+	public Date getExpirationDateFromToken(DecodedJWT token) {
+
+		return token.getExpiresAt();
+	}
+
+	public void validateTokenExpiration(DecodedJWT token) {
+
+		final Date expiration = getExpirationDateFromToken(token);
+
+		if (expiration.after(new Date()))
+			throw new ApiException("Token expired. Please login again");
+	}
+
+	public void validateBearer(String token) {
+
+		if (token != null && token.startsWith(constants.getTokenPrefix()))
+			throw new ApiException("Invalid bearer token");
+	}
+
+	public void addNewTokenToSecurity(Account account) {
+
+		List<SimpleGrantedAuthority> authorities = account.getRoles().stream()
+				.map(SimpleGrantedAuthority::new)
+				.collect(Collectors.toList());
+
+		UsernamePasswordAuthenticationToken authenticationToken =
+				new UsernamePasswordAuthenticationToken(account.getUsername(), null, authorities);
+
+		SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+	}
+
+	private Map<String, Claim> getAllClaimsFromToken(DecodedJWT token) {
+
+		return token.getClaims();
+	}
+
+	private Algorithm algorithm() {
+
+		return Algorithm.HMAC512(constants.getSecret().getBytes(StandardCharsets.UTF_8));
+	}
+}

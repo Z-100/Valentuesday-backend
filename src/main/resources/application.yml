@@ -1,0 +1,54 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        enable_lazy_load_no_trans: 'true'
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+      ddl-auto: update
+    show-sql: 'true'
+  security:
+    filter:
+      order: '10'
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/valentuesday
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+springdoc:
+  api-docs:
+    enabled: true
+    path: "/api-docs"
+  swagger-ui:
+    enabled: true
+server:
+  error:
+    include-message: always
+    include-stacktrace: never
+    include-exception: false
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+        hibernate: DEBUG
+        jdbc: DEBUG
+        jpa: DEBUG
+        transaction: DEBUG
+        web: DEBUG
+      hibernate:
+        SQL: info
+constants:
+  tokenprefix: "Bearer "
+  secret: "e2116aaf9995dcb1186efad0a9b79540f92c7ca6d0b15cb312ee3b2c1897ef9d6901513bc340e09afcd603514e3b253bdbf49e13f2088a6261e9d0aa5099caf3"
+  expiration:
+    access_token: 600000 # 10 minutes
+    refresh_token: 3600000 # 1 hour
+  uriwhitelist:
+    - "/api-docs"
+    - "/swagger-resources/"
+    - "/swagger-ui"
+  claims:
+    roles: "rls"
