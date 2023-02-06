@@ -21,4 +21,12 @@ public class Preferences {
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "account", referencedColumnName = "id")
 	private Account account;
+
+	public void enableDarkMode() {
+		this.darkModeEnabled = true;
+	}
+
+	public void disableDarkMode() {
+		this.darkModeEnabled = false;
+	}
 }

@@ -13,4 +13,8 @@ public interface PreferencesMapper {
 	@Mapping(target = "id", ignore = true)
 	@Mapping(target = "account", ignore = true)
 	Preferences toEntity(PreferencesDTO dto);
+
+	default void updateEntity(Preferences entity, PreferencesDTO dto) {
+		entity.setDarkModeEnabled(dto.getDarkModeEnabled());
+	}
 }

@@ -11,5 +11,9 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
 
 	Optional<Account> findByUsername(String username);
 
+	Optional<Account> findByUsernameOrActivationKey(String username, String activationKey);
+
 	Optional<Account> findByActivationKey(String activationKey);
+
+	Optional<Account> findByUsernameAndPassword(String username, String password);
 }

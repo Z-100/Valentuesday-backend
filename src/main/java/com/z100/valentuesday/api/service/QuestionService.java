@@ -9,12 +9,14 @@ import com.z100.valentuesday.api.mapper.QuestionMapper;
 import com.z100.valentuesday.api.repository.AccountRepository;
 import com.z100.valentuesday.api.repository.PreferencesRepository;
 import com.z100.valentuesday.api.repository.QuestionRepository;
+import com.z100.valentuesday.service.Validator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.mapping.model.MappingInstantiationException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +32,17 @@ public class QuestionService {
 
 	private final QuestionMapper questionMapper;
 
-	public QuestionDTO create(QuestionDTO preferences) {
-		return null;
+	@Transactional(rollbackFor = Throwable.class)
+	public QuestionDTO create(QuestionDTO questionDTO) {
+
+		Validator.notNull(questionDTO);
+
+		Account account = getAccountFromSecurity();
+
+		Question question = questionMapper.toEntity(questionDTO);
+		question.setAccount(account);
+
+		return questionMapper.toDTO(questionRepository.save(question));
 	}
 
 	public QuestionDTO get(String id) {
@@ -41,19 +52,19 @@ public class QuestionService {
 		return questionMapper.toDTO(byId);
 	}
 
+	@Transactional(rollbackFor = Throwable.class)
 	public QuestionDTO update(QuestionDTO dto) {
 		Question update = questionMapper.toEntity(dto);
 
 		Question fromDB = questionRepository.findById(dto.getId())
 				.orElseThrow(() -> new RuntimeException("No question found with id: " + dto.getId()));
-
+//TODO
 		update.setAccount(fromDB.getAccount());
 
-		Question save = questionRepository.save(update);
-
-		return questionMapper.toDTO(save);
+		return questionMapper.toDTO(questionRepository.save(update));
 	}
 
+	@Transactional(rollbackFor = Throwable.class)
 	public Boolean delete(String id) {
 		Question fromDB = questionRepository.findById(Long.valueOf(id))
 				.orElseThrow(() -> new RuntimeException("No question found with id: " + id));
@@ -63,15 +74,18 @@ public class QuestionService {
 		return questionRepository.findById(Long.valueOf(id)).isEmpty();
 	}
 
+	@Transactional(rollbackFor = Throwable.class)
 	public QuestionDTO getNextFor(String actKey) {
-		List<QuestionDTO> questionDTOS = questionRepository
-				.findAllByAccountActivationKey(actKey).stream()
+		List<QuestionDTO> questionDTOS = questionRepository.findAllByAccountActivationKey(actKey).stream()
 				.map(questionMapper::toDTO)
 				.toList();
 
 		Long progress = getProgress(actKey);
+		QuestionDTO questionDTO = questionDTOS.get(progress.intValue()); //TODO fix out of bounds
 
-		return questionDTOS.get(progress.intValue());
+		updateProgress(actKey);
+
+		return questionDTO;
 	}
 
 	public List<QuestionDTO> getAllForActKey(String actKey) {
@@ -86,6 +100,7 @@ public class QuestionService {
 				.getQuestionProgress();
 	}
 
+	@Transactional(rollbackFor = Throwable.class)
 	public Long updateProgress(String actKey) {
 		Account account = accountRepository.findByActivationKey(actKey)
 				.orElseThrow(() -> new ApiException("No account found with act-key: " + actKey));
@@ -93,5 +108,21 @@ public class QuestionService {
 		account.setQuestionProgress(account.getQuestionProgress() + 1);
 
 		return accountRepository.save(account).getQuestionProgress();
+	}
+
+	@Transactional(rollbackFor = Throwable.class)
+	public Long resetProgress(String actKey) {
+		Account account = accountRepository.findByActivationKey(actKey)
+				.orElseThrow(() -> new ApiException("No account found with act-key: " + actKey));
+
+		account.setQuestionProgress(0L);
+
+		return accountRepository.save(account).getQuestionProgress();
+	}
+
+	private Account getAccountFromSecurity() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return accountRepository.findByUsername(authentication.getName())
+				.orElseThrow(() -> new ApiException("No user found with name " + authentication.getName()));
 	}
 }

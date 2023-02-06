@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.z100.valentuesday.api.dto.JwtDTO;
 import com.z100.valentuesday.api.entity.Account;
 import com.z100.valentuesday.api.exception.ApiException;
 import com.z100.valentuesday.server.Constants;
@@ -42,33 +43,17 @@ public class JwtUtil {
 		this.constants = constants;
 	}
 
-	public Map<String, String> generateNewTokenMap(String subject, String issuer, List<?> roles) {
-
-		Map<String, String> tokens = new HashMap<>();
-		tokens.put("access_token", generateNewAccessToken(subject, issuer, roles));
-		tokens.put("refresh_token", generateNewRefreshToken(subject, issuer));
-
-		return tokens;
-	}
-
-	public String generateNewAccessToken(String subject, String issuer, List<?> roles) {
-		return JWT.create()
-				.withSubject(subject)
+	public JwtDTO generateNewAccessToken(String subject, String issuer, List<?> roles) {
+		String jwt = JWT.create().withSubject(subject)
 				.withExpiresAt(new Date(System.currentTimeMillis() + constants.getExpiration().get("access_token")))
 				.withIssuer(issuer)
 				.withClaim("rls", roles)
 				.sign(algorithm());
+
+		return new JwtDTO(jwt);
 	}
 
-	public String generateNewRefreshToken(String subject, String issuer) {
-		return JWT.create()
-				.withSubject(subject)
-				.withExpiresAt(new Date(System.currentTimeMillis() + constants.getExpiration().get("refresh_token")))
-				.withIssuer(issuer)
-				.sign(algorithm());
-	}
-
-	public String generateNewAccessToken(Account account) {
+	public JwtDTO generateNewAccessToken(Account account) {
 
 		String subject = account.getUsername();
 		String issuer = "Refresh token";
@@ -91,13 +76,13 @@ public class JwtUtil {
 
 		final Date expiration = getExpirationDateFromToken(token);
 
-		if (expiration.after(new Date()))
+		if (new Date().after(expiration))
 			throw new ApiException("Token expired. Please login again");
 	}
 
 	public void validateBearer(String token) {
 
-		if (token != null && token.startsWith(constants.getTokenPrefix()))
+		if (token != null && !token.startsWith(constants.getTokenPrefix()))
 			throw new ApiException("Invalid bearer token");
 	}
 

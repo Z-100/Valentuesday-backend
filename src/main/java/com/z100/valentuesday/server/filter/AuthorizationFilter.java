@@ -39,7 +39,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
-		return true; //isUnprotectedUrl.test(request.getRequestURI());
+		return isUnprotectedUrl.test(request.getRequestURI());
 	}
 
 	@Override

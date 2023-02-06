@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -27,28 +28,26 @@ public class Account {
 	private String activationKey;
 
 	@Column
-	private Long questionProgress;
+	private Long questionProgress = 0L;
 
-	@OneToOne(mappedBy = "account")
+	@OneToOne(cascade = CascadeType.ALL,
+			mappedBy = "account")
 	private Preferences preferences;
 
-	@OneToMany(cascade = {CascadeType.ALL},
+	@OneToMany(cascade = CascadeType.ALL,
 			orphanRemoval = true,
 			mappedBy = "account")
-	private Set<Question> questions = Set.of();
+	private Set<Question> questions = new HashSet<>();
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	private Set<String> roles = Set.of("ROLE_USER");
 
 	public void addRole(String name) {
-		if (roles.contains(name))
-			return;
+		if (roles.contains(name)) return;
 		roles.add(name);
 	}
 
 	public void removeRole(String name) {
-		roles.forEach(role -> {
-			if (role.equals(name)) role = null;
-		});
+		roles.removeIf(role -> role.equals(name));
 	}
 }

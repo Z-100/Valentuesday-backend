@@ -26,8 +26,8 @@ springdoc:
 server:
   error:
     include-message: always
-    include-stacktrace: never
-    include-exception: false
+    include-stacktrace: always
+    include-exception: true
 logging:
   level:
     org:
@@ -39,7 +39,7 @@ logging:
         transaction: DEBUG
         web: DEBUG
       hibernate:
-        SQL: info
+        SQL: DEBUG
 constants:
   tokenprefix: "Bearer "
   secret: "e2116aaf9995dcb1186efad0a9b79540f92c7ca6d0b15cb312ee3b2c1897ef9d6901513bc340e09afcd603514e3b253bdbf49e13f2088a6261e9d0aa5099caf3"
@@ -50,5 +50,6 @@ constants:
     - "/api-docs"
     - "/swagger-resources/"
     - "/swagger-ui"
+    - "/account/register"
   claims:
     roles: "rls"
