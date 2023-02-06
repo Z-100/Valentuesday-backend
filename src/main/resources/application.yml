@@ -12,17 +12,6 @@ spring:
   security:
     filter:
       order: '10'
-  datasource:
-    url: jdbc:postgresql://${PROD_DB_HOST}:${PROD_DB_PORT}/${PROD_DB_NAME}
-    username: ${PROD_DB_USERNAME}
-    password: ${PROD_DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-springdoc:
-  api-docs:
-    enabled: true
-    path: "/api-docs"
-  swagger-ui:
-    enabled: true
 server:
   error:
     include-message: always
@@ -47,9 +36,13 @@ constants:
     access_token: 600000 # 10 minutes
     refresh_token: 3600000 # 1 hour
   uriwhitelist:
+    - "/api-docs/**"
     - "/api-docs"
-    - "/swagger-resources/"
+    - "/swagger-ui/**"
     - "/swagger-ui"
+    - "/swagger-ui.html"
+    - "/api-docs/**"
+    - "/api-docs"
     - "/account/register"
   claims:
     roles: "rls"

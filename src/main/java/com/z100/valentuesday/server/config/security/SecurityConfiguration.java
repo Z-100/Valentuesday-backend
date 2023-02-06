@@ -33,7 +33,12 @@ public class SecurityConfiguration {
 	private final AccountDetailsService accountDetailsService;
 
 	private static final String[] AUTH_WHITELIST = {
-			"/v3/api-docs/**", "v3/api-docs/**", "/swagger-ui/**", "swagger-ui/**", "/account/**", };
+			"/api-docs",
+			"/swagger-resources/",
+			"/swagger-ui",
+			"/swagger-ui.html",
+			"/account/**",
+	};
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
