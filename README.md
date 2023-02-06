@@ -1,5 +1,7 @@
 # Valentuesday-backend
 
+Ran on railway.app
+
 An app for valentines day (🇩🇪: Valentinstag -> Valendienstag).
 
 Create questions with the (soon-to-be) integrated [question creator](https://github.com/Z-100/valentuesday-mobile)
