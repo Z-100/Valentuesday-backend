@@ -17,6 +17,7 @@ server:
     include-message: always
     include-stacktrace: always
     include-exception: true
+  address: 0.0.0.0
 logging:
   level:
     org:
