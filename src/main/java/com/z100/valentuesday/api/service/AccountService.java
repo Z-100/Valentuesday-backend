@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+import static org.springframework.http.HttpStatus.*;
+
 @Service
 @RequiredArgsConstructor
 public class AccountService {
@@ -53,12 +55,19 @@ public class AccountService {
 		return accountMapper.toDTO(accountRepository.save(account));
 	}
 
+	public AccountDTO getAccount(String username) {
+		Account account = accountRepository.findByUsername(username)
+				.orElseThrow(() -> new ApiException("No user found with username " + username, NOT_FOUND));
+
+		return accountMapper.toDTO(account);
+	}
+
 	public AccountDTO checkActivationKey(String actKey) {
 
 		Validator.notNull(actKey);
 
 		Account account = accountRepository.findByActivationKey(actKey)
-				.orElseThrow(() -> new ApiException("No account found with actKey " + actKey));
+				.orElseThrow(() -> new ApiException("No account found with actKey " + actKey, NOT_FOUND));
 
 		return accountMapper.toDTO(account);
 	}
@@ -94,12 +103,13 @@ public class AccountService {
 
 	private void checkUserAlreadyExists(String username, String activationKey) {
 		if (accountRepository.findByUsernameOrActivationKey(username, activationKey).isPresent())
-			throw new ApiException("User already exists with username " + username);
+			throw new ApiException("User already exists with username " + username, CONFLICT);
 	}
 
 	private Account getAccountFromSecurity() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return accountRepository.findByUsername(authentication.getName())
-				.orElseThrow(() -> new ApiException("No user found with name " + authentication.getName()));
+		String name = authentication.getName();
+		return accountRepository.findByUsername(name)
+				.orElseThrow(() -> new ApiException("No user found with name " + name, UNAUTHORIZED));
 	}
 }

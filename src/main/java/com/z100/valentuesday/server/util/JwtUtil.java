@@ -9,6 +9,7 @@ import com.z100.valentuesday.api.dto.JwtDTO;
 import com.z100.valentuesday.api.entity.Account;
 import com.z100.valentuesday.api.exception.ApiException;
 import com.z100.valentuesday.server.Constants;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+
 /**
  * Util to handle JWT tokens
  *
@@ -33,6 +36,9 @@ public class JwtUtil {
 	private Constants constants;
 
 	public Function<String, DecodedJWT> extractBearer = authHeaderIn -> {
+		if (authHeaderIn == null)
+			throw new ApiException("Bearer token was null");
+
 		String token = authHeaderIn.substring(constants.getTokenPrefix().length());
 		JWTVerifier verifier = JWT.require(algorithm()).build();
 
@@ -77,13 +83,13 @@ public class JwtUtil {
 		final Date expiration = getExpirationDateFromToken(token);
 
 		if (new Date().after(expiration))
-			throw new ApiException("Token expired. Please login again");
+			throw new ApiException("Token expired. Please login again", UNAUTHORIZED);
 	}
 
 	public void validateBearer(String token) {
 
 		if (token != null && !token.startsWith(constants.getTokenPrefix()))
-			throw new ApiException("Invalid bearer token");
+			throw new ApiException("Invalid bearer token", UNAUTHORIZED);
 	}
 
 	public void addNewTokenToSecurity(Account account) {

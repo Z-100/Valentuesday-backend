@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @Slf4j
 @EnableConfigurationProperties
+@EnableMethodSecurity(securedEnabled = true)
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 public class ValentuesdayApplication {
 

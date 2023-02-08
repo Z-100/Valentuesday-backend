@@ -45,5 +45,6 @@ constants:
     - "/api-docs/**"
     - "/api-docs"
     - "/account/register"
+    - "/check-activation-key"
   claims:
     roles: "rls"

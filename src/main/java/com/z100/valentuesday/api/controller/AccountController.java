@@ -5,26 +5,33 @@ import com.z100.valentuesday.api.dto.PreferencesDTO;
 import com.z100.valentuesday.api.service.AccountService;
 import com.z100.valentuesday.util.annotation.ForMobile;
 import jakarta.annotation.security.PermitAll;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
-@RestController("/api/v1")
+@RestController
 public class AccountController {
 
 	private final AccountService accountService;
 
-	@Secured("ROLE_ADMIN")
+	@PermitAll
 	@PostMapping("/account/register")
 	public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountDTO account) {
 		return ResponseEntity.ok(accountService.createAccount(account));
 	}
 
+	@Secured("ROLE_ADMIN")
+	@GetMapping("/account/{username}")
+	public ResponseEntity<AccountDTO> getAccount(@PathVariable("username") String username) {
+		return ResponseEntity.ok(accountService.getAccount(username));
+	}
+
 	@ForMobile
 	@PermitAll
-	@GetMapping("/account")
+	@PostMapping("/check-activation-key")
 	public ResponseEntity<AccountDTO> checkActivationKey(@RequestHeader("activation-key") String actKey) {
 		return ResponseEntity.ok(accountService.checkActivationKey(actKey));
 	}

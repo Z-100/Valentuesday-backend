@@ -1,6 +1,7 @@
 package com.z100.valentuesday.service;
 
 import com.z100.valentuesday.api.exception.ApiException;
+import org.springframework.http.HttpStatus;
 
 import java.util.Collection;
 

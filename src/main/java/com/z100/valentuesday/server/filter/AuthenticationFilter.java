@@ -2,6 +2,7 @@ package com.z100.valentuesday.server.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.z100.valentuesday.api.dto.JwtDTO;
+import com.z100.valentuesday.api.exception.ApiException;
 import com.z100.valentuesday.server.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
+
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Component
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -65,6 +68,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 		JwtDTO accessToken = tokenUtil.generateNewAccessToken(subject, issuer, roles);
 
 		new ObjectMapper().writeValue(response.getOutputStream(), accessToken);
+	}
+
+	@Override
+	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+		this.logger.trace("Failed to process authentication request", failed);
+		this.logger.trace("Cleared SecurityContextHolder");
+		this.logger.trace("Handling authentication failure");
+		throw new ApiException("Login failed", UNAUTHORIZED);
 	}
 
 	@Override

@@ -44,36 +44,36 @@ public class QuestionController {
 
 	@ForMobile
 	@Secured("ROLE_USER")
-	@GetMapping("/question/next-for/{act-key}")
-	public ResponseEntity<QuestionDTO> getNextFor(@PathVariable("act-key") String actKey) {
+	@GetMapping("/question/next-for")
+	public ResponseEntity<QuestionDTO> getNextFor(@RequestHeader("activation-key") String actKey) {
 		return ResponseEntity.ok(questionService.getNextFor(actKey));
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
-	@GetMapping("/question/all-for-act-key/{act-key}")
-	public ResponseEntity<List<QuestionDTO>> getAllForActKey(@PathVariable("act-key") String actKey) {
+	@GetMapping("/question/all-for-act-key")
+	public ResponseEntity<List<QuestionDTO>> getAllForActKey(@RequestHeader("activation-key") String actKey) {
 		return ResponseEntity.ok(questionService.getAllForActKey(actKey));
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
-	@GetMapping("/question/progress/{act-key}")
-	public ResponseEntity<Long> getProgress(@PathVariable("act-key") String actKey) {
+	@GetMapping("/question/progress")
+	public ResponseEntity<Long> getProgress(@RequestHeader("activation-key") String actKey) {
 		return ResponseEntity.ok(questionService.getProgress(actKey));
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
-	@PutMapping("/question/progress/{act-key}")
-	public ResponseEntity<Long> updateProgress(@PathVariable("act-key") String actKey) {
+	@PutMapping("/question/progress")
+	public ResponseEntity<Long> updateProgress(@RequestHeader("activation-key") String actKey) {
 		return ResponseEntity.ok(questionService.updateProgress(actKey));
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
-	@PatchMapping("/question/progress/{act-key}")
-	public ResponseEntity<Long> resetProgress(@PathVariable("act-key") String actKey) {
+	@PatchMapping("/question/progress")
+	public ResponseEntity<Long> resetProgress(@RequestHeader("activation-key") String actKey) {
 		return ResponseEntity.ok(questionService.resetProgress(actKey));
 	}
 }

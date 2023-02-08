@@ -37,7 +37,8 @@ public class SecurityConfiguration {
 			"/swagger-resources/",
 			"/swagger-ui",
 			"/swagger-ui.html",
-			"/account/**",
+			"/account/register",
+			"/check-activation-key",
 	};
 
 	@Bean

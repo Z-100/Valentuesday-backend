@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class QuestionService {
@@ -45,6 +47,7 @@ public class QuestionService {
 		return questionMapper.toDTO(questionRepository.save(question));
 	}
 
+	//TODO Fix so accessor can only access own questions
 	public QuestionDTO get(String id) {
 		Question byId = questionRepository.findById(Long.valueOf(id))
 				.orElseThrow(() -> new RuntimeException("No question found with id: " + id));
@@ -52,18 +55,19 @@ public class QuestionService {
 		return questionMapper.toDTO(byId);
 	}
 
+	//TODO Fix this mess
 	@Transactional(rollbackFor = Throwable.class)
 	public QuestionDTO update(QuestionDTO dto) {
 		Question update = questionMapper.toEntity(dto);
 
 		Question fromDB = questionRepository.findById(dto.getId())
 				.orElseThrow(() -> new RuntimeException("No question found with id: " + dto.getId()));
-//TODO
 		update.setAccount(fromDB.getAccount());
 
 		return questionMapper.toDTO(questionRepository.save(update));
 	}
 
+	//TODO Fix so accessor can only access own questions
 	@Transactional(rollbackFor = Throwable.class)
 	public Boolean delete(String id) {
 		Question fromDB = questionRepository.findById(Long.valueOf(id))
@@ -95,15 +99,12 @@ public class QuestionService {
 	}
 
 	public Long getProgress(String actKey) {
-		return accountRepository.findByActivationKey(actKey)
-				.orElseThrow(() -> new ApiException("No account found with act-key: " + actKey))
-				.getQuestionProgress();
+		return findByActivationKey(actKey).getQuestionProgress();
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
 	public Long updateProgress(String actKey) {
-		Account account = accountRepository.findByActivationKey(actKey)
-				.orElseThrow(() -> new ApiException("No account found with act-key: " + actKey));
+		Account account = findByActivationKey(actKey);
 
 		account.setQuestionProgress(account.getQuestionProgress() + 1);
 
@@ -112,17 +113,21 @@ public class QuestionService {
 
 	@Transactional(rollbackFor = Throwable.class)
 	public Long resetProgress(String actKey) {
-		Account account = accountRepository.findByActivationKey(actKey)
-				.orElseThrow(() -> new ApiException("No account found with act-key: " + actKey));
+		Account account = findByActivationKey(actKey);
 
 		account.setQuestionProgress(0L);
 
 		return accountRepository.save(account).getQuestionProgress();
 	}
 
+	private Account findByActivationKey(String actKey) {
+		return accountRepository.findByActivationKey(actKey)
+				.orElseThrow(() -> new ApiException("No account found with act-key: " + actKey, NOT_FOUND));
+	}
+
 	private Account getAccountFromSecurity() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		return accountRepository.findByUsername(authentication.getName())
-				.orElseThrow(() -> new ApiException("No user found with name " + authentication.getName()));
+				.orElseThrow(() -> new ApiException("No user found with name " + authentication.getName(), NOT_FOUND));
 	}
 }

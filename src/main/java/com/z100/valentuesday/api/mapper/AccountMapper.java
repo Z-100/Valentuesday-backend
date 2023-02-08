@@ -15,7 +15,6 @@ public abstract class AccountMapper {
 	private PasswordEncoder encoder;
 
 	@Mapping(target = "password", ignore = true)
-	@Mapping(target = "activationKey", ignore = true)
 	public abstract AccountDTO toDTO(Account entity);
 
 	@Mapping(target = "id", ignore = true)
