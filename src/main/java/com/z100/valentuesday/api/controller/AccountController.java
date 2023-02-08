@@ -1,11 +1,11 @@
 package com.z100.valentuesday.api.controller;
 
 import com.z100.valentuesday.api.dto.AccountDTO;
+import com.z100.valentuesday.api.dto.JwtDTO;
 import com.z100.valentuesday.api.dto.PreferencesDTO;
 import com.z100.valentuesday.api.service.AccountService;
 import com.z100.valentuesday.util.annotation.ForMobile;
 import jakarta.annotation.security.PermitAll;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -32,7 +32,7 @@ public class AccountController {
 	@ForMobile
 	@PermitAll
 	@PostMapping("/check-activation-key")
-	public ResponseEntity<AccountDTO> checkActivationKey(@RequestHeader("activation-key") String actKey) {
+	public ResponseEntity<JwtDTO> checkActivationKey(@RequestHeader("activation-key") String actKey) {
 		return ResponseEntity.ok(accountService.checkActivationKey(actKey));
 	}
 

@@ -77,32 +77,34 @@ public class QuestionService {
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
-	public QuestionDTO getNextFor(String actKey) {
-		List<QuestionDTO> questionDTOS = questionRepository.findAllByAccountActivationKey(actKey).stream()
+	public QuestionDTO getNextFor() {
+		List<QuestionDTO> questionDTOS = questionRepository
+				.findAllByAccountActivationKey(activationKeyFromSecurity()).stream()
 				.map(questionMapper::toDTO)
 				.toList();
 
-		Long progress = getProgress(actKey);
+		Long progress = getProgress();
 		QuestionDTO questionDTO = questionDTOS.get(progress.intValue()); //TODO fix out of bounds
 
-		updateProgress(actKey);
+		updateProgress();
 
 		return questionDTO;
 	}
 
-	public List<QuestionDTO> getAllForActKey(String actKey) {
-		return questionRepository.findAllByAccountActivationKey(actKey).stream()
+	public List<QuestionDTO> getAllForActKey() {
+		return questionRepository.findAllByAccountActivationKey(activationKeyFromSecurity()).stream()
 				.map(questionMapper::toDTO)
 				.toList();
 	}
 
-	public Long getProgress(String actKey) {
-		return findByActivationKey(actKey).getQuestionProgress();
+	public Long getProgress() {
+		return findByActivationKey().getQuestionProgress();
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
-	public Long updateProgress(String actKey) {
-		Account account = findByActivationKey(actKey);
+	public Long updateProgress() {
+
+		Account account = findByActivationKey();
 
 		account.setQuestionProgress(account.getQuestionProgress() + 1);
 
@@ -110,17 +112,23 @@ public class QuestionService {
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
-	public Long resetProgress(String actKey) {
-		Account account = findByActivationKey(actKey);
+	public Long resetProgress() {
+		Account account = findByActivationKey();
 
 		account.setQuestionProgress(0L);
 
 		return accountRepository.save(account).getQuestionProgress();
 	}
 
-	private Account findByActivationKey(String actKey) {
-		return accountRepository.findByActivationKey(actKey)
-				.orElseThrow(() -> new ApiException("No account found with act-key: " + actKey, NOT_FOUND));
+	private Account findByActivationKey() {
+		String activationKey = activationKeyFromSecurity();
+		return accountRepository.findByActivationKey(activationKey)
+				.orElseThrow(() -> new ApiException("No account found with act-key: " + activationKey, NOT_FOUND));
+	}
+
+	private String activationKeyFromSecurity() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return (String) authentication.getCredentials();
 	}
 
 	private Account getAccountFromSecurity() {

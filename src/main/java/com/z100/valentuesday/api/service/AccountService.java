@@ -1,6 +1,7 @@
 package com.z100.valentuesday.api.service;
 
 import com.z100.valentuesday.api.dto.AccountDTO;
+import com.z100.valentuesday.api.dto.JwtDTO;
 import com.z100.valentuesday.api.dto.PreferencesDTO;
 import com.z100.valentuesday.api.entity.Account;
 import com.z100.valentuesday.api.entity.Preferences;
@@ -9,13 +10,16 @@ import com.z100.valentuesday.api.mapper.AccountMapper;
 import com.z100.valentuesday.api.mapper.PreferencesMapper;
 import com.z100.valentuesday.api.repository.AccountRepository;
 import com.z100.valentuesday.api.repository.PreferencesRepository;
+import com.z100.valentuesday.server.util.JwtUtil;
 import com.z100.valentuesday.service.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
@@ -31,6 +35,8 @@ public class AccountService {
 	private final PreferencesRepository preferencesRepository;
 
 	private final PreferencesMapper preferencesMapper;
+
+	private final JwtUtil tokenUtil;
 
 	@Transactional(rollbackFor = ApiException.class)
 	public AccountDTO createAccount(AccountDTO accountDTO) {
@@ -62,14 +68,12 @@ public class AccountService {
 		return accountMapper.toDTO(account);
 	}
 
-	public AccountDTO checkActivationKey(String actKey) {
-
-		Validator.notNull(actKey);
+	public JwtDTO checkActivationKey(String actKey) {
 
 		Account account = accountRepository.findByActivationKey(actKey)
-				.orElseThrow(() -> new ApiException("No account found with actKey " + actKey, NOT_FOUND));
+				.orElseThrow(() -> new ApiException("No user found with activation key " + actKey, NOT_FOUND));
 
-		return accountMapper.toDTO(account);
+		return tokenUtil.generateNewAccessToken(account);
 	}
 
 	@Transactional(rollbackFor = ApiException.class)

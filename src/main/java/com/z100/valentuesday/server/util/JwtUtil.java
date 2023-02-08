@@ -49,11 +49,12 @@ public class JwtUtil {
 		this.constants = constants;
 	}
 
-	public JwtDTO generateNewAccessToken(String subject, String issuer, List<?> roles) {
+	public JwtDTO generateNewAccessToken(String subject, String issuer, List<?> roles, String actKey) {
 		String jwt = JWT.create().withSubject(subject)
 				.withExpiresAt(new Date(System.currentTimeMillis() + constants.getExpiration().get("access_token")))
 				.withIssuer(issuer)
 				.withClaim("rls", roles)
+				.withClaim("act", actKey)
 				.sign(algorithm());
 
 		return new JwtDTO(jwt);
@@ -62,10 +63,11 @@ public class JwtUtil {
 	public JwtDTO generateNewAccessToken(Account account) {
 
 		String subject = account.getUsername();
-		String issuer = "Refresh token";
+		String issuer = "/check-activation-key";
 		List<String> rolesClaim = account.getRoles().stream().toList();
+		String actKey = account.getActivationKey();
 
-		return generateNewAccessToken(subject, issuer, rolesClaim);
+		return generateNewAccessToken(subject, issuer, rolesClaim, actKey);
 	}
 
 	public String getUsernameFromToken(DecodedJWT token) {

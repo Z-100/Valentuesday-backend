@@ -3,6 +3,7 @@ package com.z100.valentuesday.server.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.z100.valentuesday.api.dto.JwtDTO;
 import com.z100.valentuesday.api.exception.ApiException;
+import com.z100.valentuesday.api.repository.AccountRepository;
 import com.z100.valentuesday.server.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Component
@@ -29,11 +31,15 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
 	private final Predicate<HttpServletRequest> isPost = req -> req.getMethod().equals("POST");
 
+	private final AccountRepository accountRepository;
+
 	private final JwtUtil tokenUtil;
 
-	public AuthenticationFilter(@Lazy AuthenticationManager authenticationManager, JwtUtil tokenUtil) {
+	public AuthenticationFilter(@Lazy AuthenticationManager authenticationManager,
+			JwtUtil tokenUtil, AccountRepository accountRepository) {
 		super.setAuthenticationManager(authenticationManager);
 		this.tokenUtil = tokenUtil;
+		this.accountRepository = accountRepository;
 	}
 
 	@Override
@@ -65,7 +71,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 				.map(GrantedAuthority::getAuthority)
 				.toList();
 
-		JwtDTO accessToken = tokenUtil.generateNewAccessToken(subject, issuer, roles);
+		String actkey = accountRepository.findByUsername(subject)
+				.orElseThrow(() -> new ApiException("Account not found", INTERNAL_SERVER_ERROR))
+				.getActivationKey();
+
+		JwtDTO accessToken = tokenUtil.generateNewAccessToken(subject, issuer, roles, actkey);
 
 		new ObjectMapper().writeValue(response.getOutputStream(), accessToken);
 	}

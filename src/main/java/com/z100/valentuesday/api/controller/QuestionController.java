@@ -29,7 +29,6 @@ public class QuestionController {
 		return ResponseEntity.ok(questionService.get(id));
 	}
 
-	@ForMobile
 	@Secured("ROLE_USER")
 	@PutMapping("/question")
 	public ResponseEntity<QuestionDTO> update(@RequestBody QuestionDTO dto) {
@@ -45,35 +44,35 @@ public class QuestionController {
 	@ForMobile
 	@Secured("ROLE_USER")
 	@GetMapping("/question/next-for")
-	public ResponseEntity<QuestionDTO> getNextFor(@RequestHeader("activation-key") String actKey) {
-		return ResponseEntity.ok(questionService.getNextFor(actKey));
+	public ResponseEntity<QuestionDTO> getNextFor() {
+		return ResponseEntity.ok(questionService.getNextFor());
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
 	@GetMapping("/question/all-for-act-key")
-	public ResponseEntity<List<QuestionDTO>> getAllForActKey(@RequestHeader("activation-key") String actKey) {
-		return ResponseEntity.ok(questionService.getAllForActKey(actKey));
+	public ResponseEntity<List<QuestionDTO>> getAllForActKey() {
+		return ResponseEntity.ok(questionService.getAllForActKey());
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
 	@GetMapping("/question/progress")
-	public ResponseEntity<Long> getProgress(@RequestHeader("activation-key") String actKey) {
-		return ResponseEntity.ok(questionService.getProgress(actKey));
+	public ResponseEntity<Long> getProgress() {
+		return ResponseEntity.ok(questionService.getProgress());
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
 	@PutMapping("/question/progress")
-	public ResponseEntity<Long> updateProgress(@RequestHeader("activation-key") String actKey) {
-		return ResponseEntity.ok(questionService.updateProgress(actKey));
+	public ResponseEntity<Long> updateProgress() {
+		return ResponseEntity.ok(questionService.updateProgress());
 	}
 
 	@ForMobile
 	@Secured("ROLE_USER")
 	@PatchMapping("/question/progress")
-	public ResponseEntity<Long> resetProgress(@RequestHeader("activation-key") String actKey) {
-		return ResponseEntity.ok(questionService.resetProgress(actKey));
+	public ResponseEntity<Long> resetProgress() {
+		return ResponseEntity.ok(questionService.resetProgress());
 	}
 }
