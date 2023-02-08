@@ -89,11 +89,7 @@ public class QuestionService {
 		if (progress >= questionDTOS.size())
 			throw new ApiException("Limit of questions reached", CONFLICT);
 
-		QuestionDTO questionDTO = questionDTOS.get(progress.intValue());
-
-		updateProgress();
-
-		return questionDTO;
+		return questionDTOS.get(progress.intValue());
 	}
 
 	public List<QuestionDTO> getAllForActKey() {
