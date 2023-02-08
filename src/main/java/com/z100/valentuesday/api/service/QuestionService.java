@@ -11,6 +11,7 @@ import com.z100.valentuesday.api.repository.PreferencesRepository;
 import com.z100.valentuesday.api.repository.QuestionRepository;
 import com.z100.valentuesday.service.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @Service
 @RequiredArgsConstructor
@@ -84,7 +86,11 @@ public class QuestionService {
 				.toList();
 
 		Long progress = getProgress();
-		QuestionDTO questionDTO = questionDTOS.get(progress.intValue()); //TODO fix out of bounds
+
+		if (progress >= questionDTOS.size())
+			throw new ApiException("Limit of questions reached", NO_CONTENT);
+
+		QuestionDTO questionDTO = questionDTOS.get(progress.intValue());
 
 		updateProgress();
 

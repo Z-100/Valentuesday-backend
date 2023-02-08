@@ -2,6 +2,7 @@ package com.z100.valentuesday.server.filter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.z100.valentuesday.api.exception.ApiError;
 import com.z100.valentuesday.api.exception.ApiException;
 import com.z100.valentuesday.server.Constants;
 import com.z100.valentuesday.server.util.JwtUtil;
@@ -10,6 +11,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -24,7 +28,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Component
 public class AuthorizationFilter extends OncePerRequestFilter {
@@ -50,7 +56,12 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		createSessionFrom(request.getHeader(AUTHORIZATION));
+		try {
+			createSessionFrom(request.getHeader(AUTHORIZATION));
+		} catch (Exception e) {
+			response.setStatus(UNAUTHORIZED.value());
+			response.getWriter().write(createErrorResponse(e.getMessage()));
+		}
 
 		filterChain.doFilter(request, response);
 	}
@@ -59,12 +70,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
 		tokenUtil.validateBearer(authorizationHeader);
 
-		DecodedJWT decodedJWT;
-		try {
-			decodedJWT = tokenUtil.extractBearer.apply(authorizationHeader);
-		} catch (Exception e) {
-			throw new ApiException(e.getMessage(), UNAUTHORIZED);
-		}
+		DecodedJWT decodedJWT = tokenUtil.extractBearer.apply(authorizationHeader);
 
 		tokenUtil.validateTokenExpiration(decodedJWT);
 
@@ -80,5 +86,16 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 				new UsernamePasswordAuthenticationToken(username, actKey, authorities);
 
 		SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+	}
+
+	private String createErrorResponse(String message) {
+		ApiError error = new ApiError(
+				message,
+				UNAUTHORIZED,
+				UNAUTHORIZED.value(),
+				ZonedDateTime.now(ZoneId.of("Z"))
+		);
+
+		return error.toString();
 	}
 }
