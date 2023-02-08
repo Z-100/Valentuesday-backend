@@ -47,30 +47,28 @@ public class QuestionService {
 		return questionMapper.toDTO(questionRepository.save(question));
 	}
 
-	//TODO Fix so accessor can only access own questions
 	public QuestionDTO get(String id) {
-		Question byId = questionRepository.findById(Long.valueOf(id))
+		Question byId = questionRepository.findByIdAndAccountId(Long.valueOf(id), getAccountFromSecurity().getId())
 				.orElseThrow(() -> new RuntimeException("No question found with id: " + id));
 
 		return questionMapper.toDTO(byId);
 	}
 
-	//TODO Fix this mess
 	@Transactional(rollbackFor = Throwable.class)
 	public QuestionDTO update(QuestionDTO dto) {
 		Question update = questionMapper.toEntity(dto);
 
-		Question fromDB = questionRepository.findById(dto.getId())
+		Question fromDB = questionRepository.findByIdAndAccountId(update.getId(), getAccountFromSecurity().getId())
 				.orElseThrow(() -> new RuntimeException("No question found with id: " + dto.getId()));
-		update.setAccount(fromDB.getAccount());
 
-		return questionMapper.toDTO(questionRepository.save(update));
+		questionMapper.updateEntity(update, fromDB);
+
+		return questionMapper.toDTO(questionRepository.save(fromDB));
 	}
 
-	//TODO Fix so accessor can only access own questions
 	@Transactional(rollbackFor = Throwable.class)
 	public Boolean delete(String id) {
-		Question fromDB = questionRepository.findById(Long.valueOf(id))
+		Question fromDB = questionRepository.findByIdAndAccountId(Long.valueOf(id), getAccountFromSecurity().getId())
 				.orElseThrow(() -> new RuntimeException("No question found with id: " + id));
 
 		questionRepository.delete(fromDB);
