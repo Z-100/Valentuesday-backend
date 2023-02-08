@@ -19,8 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -88,7 +87,7 @@ public class QuestionService {
 		Long progress = getProgress();
 
 		if (progress >= questionDTOS.size())
-			throw new ApiException("Limit of questions reached", NO_CONTENT);
+			throw new ApiException("Limit of questions reached", CONFLICT);
 
 		QuestionDTO questionDTO = questionDTOS.get(progress.intValue());
 
