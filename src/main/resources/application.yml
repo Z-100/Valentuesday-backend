@@ -34,7 +34,7 @@ constants:
   tokenprefix: "Bearer "
   secret: "e2116aaf9995dcb1186efad0a9b79540f92c7ca6d0b15cb312ee3b2c1897ef9d6901513bc340e09afcd603514e3b253bdbf49e13f2088a6261e9d0aa5099caf3"
   expiration:
-    access_token: 600000 # 10 minutes
+    access_token: 360000000 # 10 minutes
     refresh_token: 3600000 # 1 hour
   uriwhitelist:
     - "/api-docs/**"
