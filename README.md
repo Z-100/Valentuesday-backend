@@ -30,3 +30,5 @@ do some stuff with e.g. Swagger or Postman by sending HTTP requests to the serve
 ### Answer the questions
 
 After logging into the app using your `activationKey` your SO has to answer your questions... Yeah.
+
+Ya yeet
